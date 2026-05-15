@@ -1,32 +1,28 @@
-//
-//  TodoAppApp.swift
-//  TodoApp
-//
-//  Created by wangyaqiang04 on 2026/5/14.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
 struct TodoAppApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    let container: ModelContainer
 
+    init() {
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            container = try ModelContainer(
+                for: TodoItem.self, Tag.self,
+                configurations: ModelConfiguration(isStoredInMemoryOnly: false)
+            )
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            fatalError("SwiftData 初始化失败: \(error)")
         }
-    }()
+    }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    await NotificationService.shared.requestAuthorization()
+                }
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(container)
     }
 }
